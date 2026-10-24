@@ -211,6 +211,18 @@
     };
     range.addEventListener('input', set);
     set();
+
+    // Prevent track clicking from jumping slider; only allow dragging the slider thumb
+    range.addEventListener('pointerdown', function (e) {
+      var rect = ba.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var val = parseFloat(range.value) || 50;
+      var thumbX = (val / 100) * rect.width;
+      if (Math.abs(x - thumbX) > 44) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
   });
 
   /* ---------- hero subtle parallax (desktop, motion allowed, rAF-throttled) ---------- */
