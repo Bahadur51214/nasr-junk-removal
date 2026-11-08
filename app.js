@@ -206,23 +206,74 @@
   document.querySelectorAll('.ba').forEach(function (ba) {
     var range = ba.querySelector('.ba-range');
     if (!range) return;
-    var set = function () {
-      ba.style.setProperty('--pos', range.value + '%');
-    };
-    range.addEventListener('input', set);
-    set();
 
-    // Prevent track clicking from jumping slider; only allow dragging the slider thumb
-    range.addEventListener('pointerdown', function (e) {
-      var rect = ba.getBoundingClientRect();
-      var x = e.clientX - rect.left;
-      var val = parseFloat(range.value) || 50;
-      var thumbX = (val / 100) * rect.width;
-      if (Math.abs(x - thumbX) > 44) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+    var isDragging = false;
+
+    var setPos = function (val) {
+      var clamped = Math.max(0, Math.min(100, val));
+      range.value = clamped;
+      ba.style.setProperty('--pos', clamped + '%');
+    };
+
+    range.addEventListener('input', function () {
+      ba.style.setProperty('--pos', range.value + '%');
     });
+
+    var getClientX = function (e) {
+      if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
+      if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
+      return e.clientX;
+    };
+
+    var isOnHandle = function (clientX) {
+      var rect = ba.getBoundingClientRect();
+      var x = clientX - rect.left;
+      var currentVal = parseFloat(range.value) || 50;
+      var thumbX = (currentVal / 100) * rect.width;
+      return Math.abs(x - thumbX) <= 44;
+    };
+
+    var startDrag = function (e) {
+      var clientX = getClientX(e);
+      if (!isOnHandle(clientX)) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      isDragging = true;
+      if (range.setPointerCapture && e.pointerId !== undefined) {
+        try { range.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+    };
+
+    var moveDrag = function (e) {
+      if (!isDragging) return;
+      var rect = ba.getBoundingClientRect();
+      var clientX = getClientX(e);
+      var percent = ((clientX - rect.left) / rect.width) * 100;
+      setPos(percent);
+    };
+
+    var stopDrag = function (e) {
+      if (isDragging) {
+        isDragging = false;
+        if (range.releasePointerCapture && e.pointerId !== undefined) {
+          try { range.releasePointerCapture(e.pointerId); } catch (err) {}
+        }
+      }
+    };
+
+    range.addEventListener('pointerdown', startDrag);
+    range.addEventListener('pointermove', moveDrag);
+    range.addEventListener('pointerup', stopDrag);
+    range.addEventListener('pointercancel', stopDrag);
+
+    range.addEventListener('touchstart', startDrag, { passive: false });
+    range.addEventListener('touchmove', moveDrag, { passive: false });
+    range.addEventListener('touchend', stopDrag);
+    range.addEventListener('touchcancel', stopDrag);
+
+    setPos(parseFloat(range.value) || 50);
   });
 
   /* ---------- hero subtle parallax (desktop, motion allowed, rAF-throttled) ---------- */
