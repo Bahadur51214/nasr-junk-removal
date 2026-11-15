@@ -578,6 +578,31 @@ html.js .service-card {
   line-height: 1.65;
 }
 
+/* --- footer credit ---------------------------------------------------------- */
+.credit-line {
+  margin: 1.25rem 0 0;
+  padding-top: 1.25rem;
+  color: #7A8699;
+  font-size: .75rem;
+  letter-spacing: .02em;
+  line-height: 1.6;
+}
+.credit-link {
+  color: #C7D0DE;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(245, 158, 11, .45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color .2s ease, text-decoration-color .2s ease;
+}
+.credit-link:hover,
+.credit-link:focus-visible {
+  color: #F59E0B;
+  text-decoration-color: #F59E0B;
+}
+
+
 /* --- reduced motion: show everything, animate nothing --------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html {
